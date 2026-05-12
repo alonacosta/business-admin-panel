@@ -6,15 +6,19 @@ use App\Enums\ProjectStatus;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Project::class);
+
         $projects = Project::query()
             ->with('owner:id,name,email')
             ->latest()
@@ -40,6 +44,8 @@ class ProjectController extends Controller
      */
     public function store(StoreProjectRequest $request)
     {
+        $this->authorize('create', Project::class);
+
         Project::create([
             ...$request->validated(),
             'owner_id' => $request->user()->id,
@@ -69,6 +75,8 @@ class ProjectController extends Controller
      */
     public function update(UpdateProjectRequest $request, Project $project)
     {
+        $this->authorize('update', $project);
+
         $project->update($request->validated());
 
         return redirect()->route('projects.index')->with('success', 'Project updated successfully.');
@@ -79,6 +87,8 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        $this->authorize('delete', $project);
+
         $project->delete();
 
         return redirect()->route('projects.index')->with('success', 'Project deleted successfully.');
