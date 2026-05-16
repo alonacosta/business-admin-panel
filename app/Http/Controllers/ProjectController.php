@@ -27,7 +27,10 @@ class ProjectController extends Controller
 
         return Inertia('projects/Index', [
             'projects' => $projects,
-            'statuses' => ProjectStatus::cases(),
+            'statuses' => collect(ProjectStatus::cases())->map(fn(ProjectStatus $status) => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ]),
         ]);
     }
 
