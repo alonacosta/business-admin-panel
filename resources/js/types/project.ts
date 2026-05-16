@@ -29,3 +29,8 @@ export type ProjectStatusOption = {
     value: ProjectStatus;
     label: string;
 };
+
+export type ProjectFilters = {
+    search: string;
+    status: string;
+}
