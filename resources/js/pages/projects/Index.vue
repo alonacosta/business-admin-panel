@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import ProjectDeleteDialog from '@/components/projects/ProjectDeleteDialog.vue';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import ProjectsTable from '@/components/projects/ProjectsTable.vue';
@@ -69,6 +69,18 @@ watch(
     { deep: true },
 );
 
+function clearFilters() {
+    filterForm.value.search = '';
+    filterForm.value.status = ALL_STATUSES;
+}
+
+const hasActiveFilters = computed(() => {
+    return (
+        filterForm.value.search !== '' ||
+        filterForm.value.status !== ALL_STATUSES
+    );
+});
+
 const isFormDialogOpen = ref(false);
 const isDeleteDialogOpen = ref(false);
 
@@ -112,9 +124,7 @@ function openDeleteDialog(project: Project) {
             />
             <Select
                 :model-value="filterForm.status"
-                @update:model-value="
-                    filterForm.status = String($event)
-                "
+                @update:model-value="filterForm.status = String($event)"
             >
                 <SelectTrigger class="md:w-48">
                     <SelectValue placeholder="All Statuses" />
@@ -130,6 +140,15 @@ function openDeleteDialog(project: Project) {
                     </SelectItem>
                 </SelectContent>
             </Select>
+
+            <Button
+                v-if="hasActiveFilters"
+                type="button"
+                varian="outline"
+                @click="clearFilters"
+            >
+                Clear Filters
+            </Button>
         </div>
 
         <ProjectsTable

@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 class ProjectController extends Controller
 {
     use AuthorizesRequests;
+
     /**
      * Display a listing of the resource.
      */
@@ -21,29 +22,22 @@ class ProjectController extends Controller
 
         $projects = Project::query()
             ->with('owner:id,name,email')
-            ->when($request->string('search')->toString(), function ($query, string $search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', "%{$search}%")
-                        ->orWhere('description', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->string('status')->toString(), function ($query, string $status) {
-                $query->where('status', $status);
-            })
+            ->search($request->input('search'))
+            ->status($request->input('status'))
             ->latest()
             ->paginate(10)
             ->withQueryString();
 
         return Inertia('projects/Index', [
             'projects' => $projects,
-            'statuses' => collect(ProjectStatus::cases())->map(fn(ProjectStatus $status) => [
+            'statuses' => collect(ProjectStatus::cases())->map(fn (ProjectStatus $status) => [
                 'value' => $status->value,
                 'label' => $status->label(),
             ]),
             'filters' => [
                 'search' => $request->string('search')->toString(),
                 'status' => $request->string('status')->toString(),
-            ]
+            ],
         ]);
     }
 
