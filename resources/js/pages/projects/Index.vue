@@ -18,11 +18,17 @@ import type {
     Project,
     ProjectStatusOption,
     ProjectFilters,
+    PaginationLink,
 } from '@/types/project';
 
 type PaginatedProjects = {
     data: Project[];
-    links: unknown[];
+    links: PaginationLink[];
+    current_page: number;
+    last_page: number;
+    from: number | null;
+    to: number | null;
+    total: number;
     meta: unknown;
 };
 
@@ -100,6 +106,22 @@ function openDeleteDialog(project: Project) {
     selectedProject.value = project;
     isDeleteDialogOpen.value = true;
 }
+
+function visitPaginationUrl(url: string | null) {
+    if (!url) {
+        return;
+    }
+
+    router.get(
+        url,
+        {},
+        {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        },
+    );
+}
 </script>
 <template>
     <Head title="Projects" />
@@ -144,7 +166,7 @@ function openDeleteDialog(project: Project) {
             <Button
                 v-if="hasActiveFilters"
                 type="button"
-                varian="outline"
+                variant="outline"
                 @click="clearFilters"
             >
                 Clear Filters
@@ -156,6 +178,44 @@ function openDeleteDialog(project: Project) {
             @edit="openEditDialog"
             @delete="openDeleteDialog"
         />
+        <div
+            v-if="projects.total > 0"
+            class="mt-4 flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:justify-between"
+        >
+            <p class="text-sm text-muted-foreground">
+                Showing {{ projects.from }}-{{ projects.to }} of
+                {{ projects.total }} projects
+            </p>
+            <div class="flex items-center gap-2">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="!projects.links[0].url"
+                    @click="visitPaginationUrl(projects.links[0].url ?? null)"
+                >
+                    Previous
+                </Button>
+
+                <span class="text-sm text-muted-foreground">
+                    Page {{ projects.current_page }} of
+                    {{ projects.last_page }}
+                </span>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    :disabled="!projects.links[projects.links.length - 1].url"
+                    @click="
+                        visitPaginationUrl(
+                            projects.links[projects.links.length - 1].url ??
+                                null,
+                        )
+                    "
+                >
+                    Next
+                </Button>
+            </div>
+        </div>
 
         <ProjectFormDialog
             v-model:open="isFormDialogOpen"
