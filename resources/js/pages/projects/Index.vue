@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import ProjectDeleteDialog from '@/components/projects/ProjectDeleteDialog.vue';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import ProjectsTable from '@/components/projects/ProjectsTable.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+} from '@/components/ui/pagination';
 import {
     Select,
     SelectContent,
@@ -29,7 +35,7 @@ type PaginatedProjects = {
     from: number | null;
     to: number | null;
     total: number;
-    meta: unknown;
+    per_page: number;
 };
 
 const props = defineProps<{
@@ -180,41 +186,71 @@ function visitPaginationUrl(url: string | null) {
         />
         <div
             v-if="projects.total > 0"
-            class="mt-4 flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:justify-between"
+            class="mt-4 flex flex-col gap-3 rounded-xl border px-4 py-3 md:flex-row md:items-center md:justify-center md:gap-10"
         >
-            <p class="text-sm text-muted-foreground">
+            <p class="text-center md:text-left whitespace-nowrap text-sm text-muted-foreground">
                 Showing {{ projects.from }}-{{ projects.to }} of
                 {{ projects.total }} projects
             </p>
-            <div class="flex items-center gap-2">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    :disabled="!projects.links[0].url"
-                    @click="visitPaginationUrl(projects.links[0].url ?? null)"
-                >
-                    Previous
-                </Button>
 
-                <span class="text-sm text-muted-foreground">
-                    Page {{ projects.current_page }} of
-                    {{ projects.last_page }}
-                </span>
+            <Pagination
+                v-if="projects.total > 0"
+                :items-per-page="projects.per_page"
+                :total="projects.total"
+            >
+                <PaginationContent class="gap-1">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 w-8"
+                        :disabled="!projects.links[0]?.url"
+                        @click="
+                            visitPaginationUrl(projects.links[0]?.url ?? null)
+                        "
+                    >
+                        <ChevronLeft class="h-4 w-4" />
+                    </Button>
 
-                <Button
-                    variant="outline"
-                    size="sm"
-                    :disabled="!projects.links[projects.links.length - 1].url"
-                    @click="
-                        visitPaginationUrl(
-                            projects.links[projects.links.length - 1].url ??
-                                null,
-                        )
-                    "
-                >
-                    Next
-                </Button>
-            </div>
+                    <template
+                        v-for="link in projects.links.slice(1, -1)"
+                        :key="link.label"
+                    >
+                        <Button
+                            v-if="link.label !== '...'"
+                            variant="outline"
+                            size="sm"
+                            class="h-8 min-w-8 px-3"
+                            :class="{
+                                'bg-primary text-primary-foreground':
+                                    link.active,
+                            }"
+                            :disabled="!link.url || link.active"
+                            @click="visitPaginationUrl(link.url)"
+                        >
+                            {{ link.label }}
+                        </Button>
+
+                        <PaginationEllipsis v-else />
+                    </template>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        class="h-8 w-8"
+                        :disabled="
+                            !projects.links[projects.links.length - 1]?.url
+                        "
+                        @click="
+                            visitPaginationUrl(
+                                projects.links[projects.links.length - 1]
+                                    ?.url ?? null,
+                            )
+                        "
+                    >
+                        <ChevronRight class="h-4 w-4" />
+                    </Button>
+                </PaginationContent>
+            </Pagination>
         </div>
 
         <ProjectFormDialog
