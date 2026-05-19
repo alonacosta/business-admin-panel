@@ -20,11 +20,24 @@ class ProjectController extends Controller
     {
         $this->authorize('viewAny', Project::class);
 
+        $sort = $request->input('sort', 'created_at');
+        $direction = $request->input('direction', 'desc');
+
+        $allowedSorts = ['created_at', 'due_date', 'name', 'status'];
+
+        if (!in_array($sort, $allowedSorts, true)) {
+            $sort = 'created_at';
+        }
+
+        if (!in_array($direction, ['asc', 'desc'], true)) {
+            $direction = 'desc';
+        }
+
         $projects = Project::query()
             ->with('owner:id,name,email')
             ->search($request->input('search'))
             ->status($request->input('status'))
-            ->latest()
+            ->orderBy($sort, $direction)
             ->paginate(10)
             ->withQueryString();
 
@@ -37,6 +50,8 @@ class ProjectController extends Controller
             'filters' => [
                 'search' => $request->string('search')->toString(),
                 'status' => $request->string('status')->toString(),
+                'sort' => $sort,
+                'direction' => $direction,
             ],
         ]);
     }

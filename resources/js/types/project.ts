@@ -33,6 +33,8 @@ export type ProjectStatusOption = {
 export type ProjectFilters = {
     search: string;
     status: string;
+    sort: string;
+    direction: 'asc' | 'desc';
 }
 
 export type PaginationLink = {

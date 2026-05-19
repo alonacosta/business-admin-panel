@@ -60,7 +60,21 @@ const ALL_STATUSES = 'all';
 const filterForm = ref<ProjectFilters>({
     search: props.filters.search,
     status: props.filters.status || ALL_STATUSES,
+    sort: props.filters.sort || 'created_at',
+    direction: props.filters.direction || 'desc',
 });
+
+function handleSort(column: string) {
+    if (filterForm.value.sort === column) {
+        filterForm.value.direction =
+            filterForm.value.direction === 'asc' ? 'desc' : 'asc';
+
+        return;
+    }
+
+    filterForm.value.sort = column;
+    filterForm.value.direction = 'asc';
+}
 
 watch(
     filterForm,
@@ -70,6 +84,8 @@ watch(
             {
                 search: filters.search,
                 status: filters.status === ALL_STATUSES ? '' : filters.status,
+                sort: filters.sort,
+                direction: filters.direction,
             },
             {
                 preserveState: true,
@@ -181,6 +197,9 @@ function visitPaginationUrl(url: string | null) {
 
         <ProjectsTable
             :projects="projects.data"
+            :sort="filterForm.sort"
+            :direction="filterForm.direction"
+            @sort="handleSort"
             @edit="openEditDialog"
             @delete="openDeleteDialog"
         />
