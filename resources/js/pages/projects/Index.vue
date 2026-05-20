@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
+import { useDebounceFn } from '@vueuse/core';
 import { RotateCcw } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import ProjectDeleteDialog from '@/components/projects/ProjectDeleteDialog.vue';
@@ -72,25 +73,29 @@ function handleSort(column: string) {
     filterForm.value.direction = 'asc';
 }
 
+function visitProjects(filters: ProjectFilters) {
+    router.get(index().url, {
+        search: filters.search,
+        status: filters.status === ALL_STATUSES ? '' : filters.status,
+        sort: filters.sort,
+        direction: filters.direction,
+    }, { preserveState: true, preserveScroll: true, replace: true });
+}
+
+const debouncedVisitProjects = useDebounceFn((filters: ProjectFilters) => visitProjects(filters), 400);
+
 watch(
-    filterForm,
-    (filters) => {
-        router.get(
-            index().url,
-            {
-                search: filters.search,
-                status: filters.status === ALL_STATUSES ? '' : filters.status,
-                sort: filters.sort,
-                direction: filters.direction,
-            },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                replace: true,
-            },
-        );
-    },
-    { deep: true },
+    () => filterForm.value.search,
+    () => debouncedVisitProjects(filterForm.value),
+);
+
+watch(
+    () => [
+        filterForm.value.status,
+        filterForm.value.sort,
+        filterForm.value.direction,
+    ],
+    () => visitProjects(filterForm.value),
 );
 
 function clearFilters() {
