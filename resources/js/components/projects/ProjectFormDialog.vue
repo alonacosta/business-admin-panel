@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
 import { computed, watch } from 'vue';
+import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,11 +60,11 @@ watch(
             return;
         }
 
-        if(!props.project) {
+        if (!props.project) {
             form.reset();
         }
     },
-)
+);
 
 watch(
     () => props.project,
@@ -97,7 +98,10 @@ function submit() {
     if (isEditing.value && props.project) {
         form.transform(() => getPayload()).put(update(props.project.id).url, {
             preserveScroll: true,
-            onSuccess: () => closeDialog(),
+            onSuccess: () => {
+                toast.success('Project updated successfully');
+                closeDialog();
+            },
         });
 
         return;
@@ -105,7 +109,10 @@ function submit() {
 
     form.transform(() => getPayload()).post(store().url, {
         preserveScroll: true,
-        onSuccess: () => closeDialog(),
+        onSuccess: () => {
+            toast.success('Project created successfully');
+            closeDialog();
+        },
     });
 }
 </script>
