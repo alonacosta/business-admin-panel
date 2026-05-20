@@ -5,6 +5,7 @@ import {
     getCoreRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { computed, h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -33,10 +34,10 @@ const emit = defineEmits<{
 
 function sortIcon(column: string) {
     if (props.sort !== column) {
-        return '↕';
+        return ArrowUpDown;
     }
 
-    return props.direction === 'asc' ? '↑' : '↓';
+    return props.direction === 'asc' ? ArrowUp : ArrowDown;
 }
 
 function sortableHeader(label: string, column: string) {
@@ -47,7 +48,7 @@ function sortableHeader(label: string, column: string) {
                 class: 'flex items-center gap-1 fornt-medium hover:text-primary',
                 onClick: () => emit('sort', column),
             },
-            [label, h('span', { class: 'text-xs text-muted-foreground' }, sortIcon(column))],
+            [label, h(sortIcon(column), { class: 'h-4 w-4 text-muted-foreground'})],
         );
 }
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head, router } from '@inertiajs/vue3';
+import { RotateCcw } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import ProjectDeleteDialog from '@/components/projects/ProjectDeleteDialog.vue';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
@@ -97,6 +98,11 @@ function clearFilters() {
     filterForm.value.status = ALL_STATUSES;
 }
 
+function resetSorting() {
+    filterForm.value.sort = 'created_at';
+    filterForm.value.direction = 'desc';
+}
+
 const hasActiveFilters = computed(() => {
     return (
         filterForm.value.search !== '' ||
@@ -147,49 +153,68 @@ function visitPaginationUrl(url: string | null) {
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-semibold">Projects</h1>
-                <p class="text-sm text-muted-foreground">
-                    Manage business projects
-                </p>
+                <div
+                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                    <p>Manage business projects</p>
+                    <p>({{ projects.total }} projects)</p>
+                </div>
             </div>
 
             <Button @click="openCreateDialog">Create Project</Button>
         </div>
 
-        <div class="flex flex-col gap-3 md:flex-row md:items-center">
-            <Input
-                v-model="filterForm.search"
-                placeholder="Search projects..."
-                class="md:max-w-sm"
-            />
-            <Select
-                :model-value="filterForm.status"
-                @update:model-value="filterForm.status = String($event)"
-            >
-                <SelectTrigger class="md:w-48">
-                    <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem :value="ALL_STATUSES">All Statuses</SelectItem>
-                    <SelectItem
-                        v-for="status in statuses"
-                        :key="status.value"
-                        :value="status.value"
-                    >
-                        {{ status.label }}
-                    </SelectItem>
-                </SelectContent>
-            </Select>
+        <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center">
+                <Input
+                    v-model="filterForm.search"
+                    placeholder="Search projects..."
+                    class="md:max-w-sm"
+                />
+                <Select
+                    :model-value="filterForm.status"
+                    @update:model-value="filterForm.status = String($event)"
+                >
+                    <SelectTrigger class="md:w-48">
+                        <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem :value="ALL_STATUSES"
+                            >All Statuses</SelectItem
+                        >
+                        <SelectItem
+                            v-for="status in statuses"
+                            :key="status.value"
+                            :value="status.value"
+                        >
+                            {{ status.label }}
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Button
+                    v-if="hasActiveFilters"
+                    type="button"
+                    variant="outline"
+                    @click="clearFilters"
+                >
+                    Clear Filters
+                </Button>
+            </div>
 
             <Button
-                v-if="hasActiveFilters"
-                type="button"
-                variant="outline"
-                @click="clearFilters"
+                v-if="
+                    filterForm.sort !== 'created_at' ||
+                    filterForm.direction !== 'desc'
+                "
+                variant="ghost"
+                size="sm"
+                @click="resetSorting"
             >
-                Clear Filters
+                <RotateCcw class="h-4 w-4" />
+                Reset Sorting
             </Button>
         </div>
-
         <ProjectsTable
             :projects="projects.data"
             :sort="filterForm.sort"
@@ -198,14 +223,14 @@ function visitPaginationUrl(url: string | null) {
             @edit="openEditDialog"
             @delete="openDeleteDialog"
         />
-       <PaginationFooter
-           :from="projects.from"
-           :to="projects.to"
-           :total="projects.total"
-           :per-page="projects.per_page"
-           :links="projects.links"
-           @visit="visitPaginationUrl"
-       />
+        <PaginationFooter
+            :from="projects.from"
+            :to="projects.to"
+            :total="projects.total"
+            :per-page="projects.per_page"
+            :links="projects.links"
+            @visit="visitPaginationUrl"
+        />
 
         <ProjectFormDialog
             v-model:open="isFormDialogOpen"
