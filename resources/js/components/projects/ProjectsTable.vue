@@ -5,10 +5,11 @@ import {
     getCoreRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
 import { computed, h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {
     Table,
     TableBody,
@@ -126,20 +127,25 @@ function getStatusLabel(status: Project['status']) {
 
                         <template v-else-if="cell.column.id === 'actions'">
                             <div class="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    @click="emit('edit', row.original)"
-                                >
-                                    Edit
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    @click="emit('delete', row.original)"
-                                >
-                                    Delete
-                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger as-child>
+                                        <Button variant="ghost" size="icon" class="w-8 h-8">
+                                            <MoreHorizontal class="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem @click="emit('edit', row.original)">
+                                            <Pencil class="mr-2 h-4 w-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            class="text-destructive focus:text-destructive"
+                                            @click="emit('delete', row.original)">
+                                            <Trash2 class="mr-2 h-4 w-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
                             </div>
                         </template>
 
