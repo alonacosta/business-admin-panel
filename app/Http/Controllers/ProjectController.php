@@ -90,6 +90,10 @@ class ProjectController extends Controller
 
         return Inertia('projects/Show', [
             'project' => $project,
+            'statuses' => collect(ProjectStatus::cases())->map(fn (ProjectStatus $status) => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ]),
         ]);
     }
 
