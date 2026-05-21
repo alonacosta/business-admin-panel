@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { Link } from '@inertiajs/vue3';
 import {
     createColumnHelper,
     FlexRender,
     getCoreRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2, FolderOpen } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2, FolderOpen, Eye } from 'lucide-vue-next';
 import { computed, h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { formatDate } from '@/lib/date';
+import { show } from '@/routes/projects';
 import type { Project } from '@/types/project';
 
 const props = defineProps<{
@@ -133,7 +135,13 @@ function getStatusLabel(status: Project['status']) {
                                             <MoreHorizontal class="h-4 w-4" />
                                         </Button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="end" class="w-40">
+                                        <DropdownMenuItem>
+                                            <Link :href="show(row.original.id).url" class="flex items-center">
+                                                <Eye class="mr-2 h-4 w-4" />
+                                                View Details
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuItem @click="emit('edit', row.original)">
                                             <Pencil class="mr-2 h-4 w-4" />
                                             Edit

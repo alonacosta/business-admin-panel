@@ -82,9 +82,15 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Project $project)
     {
-        //
+        $this->authorize('view', $project);
+
+        $project->load('owner:id,name,email');
+
+        return Inertia('projects/Show', [
+            'project' => $project,
+        ]);
     }
 
     /**
