@@ -5,7 +5,7 @@ import {
     getCoreRowModel,
     useVueTable,
 } from '@tanstack/vue-table';
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2, FolderOpen } from 'lucide-vue-next';
 import { computed, h } from 'vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -160,9 +160,23 @@ function getStatusLabel(status: Project['status']) {
                 <TableRow v-if="!table.getRowModel().rows.length">
                     <TableCell
                         :colspan="columns.length"
-                        class="h-24 text-center"
+                        class="h-52"
                     >
-                        No projects found.
+                        <div
+                            class="flex flex-col items-center justify-center gap-3 text-center"
+                        >
+                            <div
+                            class="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                                <FolderOpen class="h-6 w-6 text-muted-foreground" />
+                            </div>
+
+                            <div class="space-y-1">
+                                <h3 class="text-sm font-medium">No project found</h3>
+                                <p class="text-sm text-muted-foreground">
+                                    Try adjusting your filters or create a new project.
+                                </p>
+                            </div>
+                        </div>
                     </TableCell>
                 </TableRow>
             </TableBody>
