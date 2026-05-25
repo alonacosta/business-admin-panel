@@ -2,19 +2,19 @@
 
 namespace App\Models;
 
-use App\Enums\ProjectStatus;
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Project extends Model
+class Task extends Model
 {
     use HasFactory;
     protected $fillable = [
+        'project_id',
         'owner_id',
-        'name',
+        'title',
         'description',
         'status',
         'due_date',
@@ -23,10 +23,16 @@ class Project extends Model
     protected function casts(): array
     {
         return [
+            'project_id' => 'integer',
             'owner_id' => 'integer',
-            'status' => ProjectStatus::class,
+            'status' => TaskStatus::class,
             'due_date' => 'date',
         ];
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     public function owner(): BelongsTo
@@ -34,17 +40,12 @@ class Project extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function tasks(): HasMany
-    {
-        return $this->hasMany(Task::class);
-    }
-
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
         return $query->when($search, function ($query, $search) {
             $query->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                $query->where('title', 'like', '%'.$search.'%')
+                    ->orWhere('description', 'like', '%'.$search.'%');
             });
         });
     }
