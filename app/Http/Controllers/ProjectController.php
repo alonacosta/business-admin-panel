@@ -25,11 +25,11 @@ class ProjectController extends Controller
 
         $allowedSorts = ['created_at', 'due_date', 'name', 'status'];
 
-        if (!in_array($sort, $allowedSorts, true)) {
+        if (! in_array($sort, $allowedSorts, true)) {
             $sort = 'created_at';
         }
 
-        if (!in_array($direction, ['asc', 'desc'], true)) {
+        if (! in_array($direction, ['asc', 'desc'], true)) {
             $direction = 'desc';
         }
 
