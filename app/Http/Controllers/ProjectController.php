@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ProjectStatus;
+use App\Enums\TaskStatus;
 use App\Http\Requests\StoreProjectRequest;
 use App\Http\Requests\UpdateProjectRequest;
 use App\Models\Project;
@@ -86,11 +87,18 @@ class ProjectController extends Controller
     {
         $this->authorize('view', $project);
 
-        $project->load('owner:id,name,email');
+        $project->load([
+            'owner:id,name,email',
+            'tasks.owner:id,name,email',
+        ]);
 
         return Inertia('projects/Show', [
             'project' => $project,
             'statuses' => collect(ProjectStatus::cases())->map(fn (ProjectStatus $status) => [
+                'value' => $status->value,
+                'label' => $status->label(),
+            ]),
+            'taskStatuses' => collect(TaskStatus::cases())->map(fn (TaskStatus $status) => [
                 'value' => $status->value,
                 'label' => $status->label(),
             ]),

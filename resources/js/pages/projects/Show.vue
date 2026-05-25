@@ -7,11 +7,17 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/date';
 import { index } from '@/routes/projects';
-import type { Project, ProjectStatusOption } from '@/types/project';
+import type {
+    Project,
+    ProjectStatusOption,
+    Task,
+    TaskStatusOption,
+} from '@/types/project';
 
 defineProps<{
     project: Project;
     statuses: ProjectStatusOption[];
+    taskStatuses: TaskStatusOption[];
 }>();
 
 defineOptions({
@@ -45,6 +51,25 @@ function getStatusVariant(status: Project['status']) {
     }
 
     return 'secondary';
+}
+
+function getTaskStatusLabel(status: Task['status']) {
+    return status
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+}
+
+function getTaskStatusVariant(status: Task['status']) {
+    if (status === 'completed') {
+        return 'default';
+    }
+
+    if (status === 'in_progress') {
+        return 'secondary';
+    }
+
+    return 'outline';
 }
 </script>
 <template>
@@ -80,7 +105,6 @@ function getStatusVariant(status: Project['status']) {
                 </div>
 
                 <p
-                    v-if="project.description"
                     class="max-w-2xl text-sm text-muted-foreground"
                 >
                     {{ project.description || 'No description yet.' }}
@@ -132,13 +156,43 @@ function getStatusVariant(status: Project['status']) {
                         Tasks for this project will appear here.
                     </p>
                 </div>
-                <Button variant="outline" size="sm" disabled>
-                    Add task
-                </Button>
+                <Button variant="outline" size="sm" disabled> Add task </Button>
             </div>
-            <div class="mt-6 rounded-lg border border-dashed p-8 text-center">
-                <p class="text-sm fornmt-medium">No task yet</p>
-                <p class="mt-1 text-sm test-muted-foreground">Create tasks later to break this project into smaller steps.</p>
+            <div v-if="project.tasks?.length" class="mt-6 space-y-3">
+                <div
+                    v-for="task in project.tasks"
+                    :key="task.id"
+                    class="flex items-center justify-between rounded-lg border p-4"
+                >
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-medium">
+                                {{ task.title }}
+                            </h3>
+                            <Badge :variant="getTaskStatusVariant(task.status)">
+                                {{ getTaskStatusLabel(task.status) }}
+                            </Badge>
+                        </div>
+                        <p
+                            v-if="task.description"
+                            class="text-sm text-muted-foreground"
+                        >
+                            {{ task.description }}
+                        </p>
+                        <p class="text-sm text-muted-foreground">
+                            Due: {{ formatDate(task.due_date) }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div
+                v-else
+                class="mt-6 rounded-lg border border-dashed p-8 text-center"
+            >
+                <p class="font-medium text-sm">No task yet</p>
+                <p class="text-muted-foreground mt-1 text-sm">
+                    Create tasks later to break this project into smaller steps.
+                </p>
             </div>
         </div>
     </div>

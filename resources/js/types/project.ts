@@ -16,6 +16,7 @@ export type Project = {
     created_at: string;
     updated_at: string;
     owner?: ProjectOwner;
+    tasks?: Task[];
 };
 
 export type ProjectFormData = {
@@ -42,3 +43,30 @@ export type PaginationLink = {
     label: string;
     active: boolean;
 }
+
+export type TaskStatus = 'todo' | 'in_progress' | 'completed';
+
+export type Task = {
+    id: number;
+    project_id: number;
+    owner_id: number;
+    title: string;
+    description: string | null;
+    status: TaskStatus;
+    due_date: string | null;
+    created_at: string;
+    updated_at: string;
+    owner?: ProjectOwner;
+};
+
+export type TaskFormData = {
+    title: string;
+    description: string;
+    status: TaskStatus;
+    due_date: string;
+};
+
+export type TaskStatusOption = {
+    value: TaskStatus;
+    label: string;
+};
