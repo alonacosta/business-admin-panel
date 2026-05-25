@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Pencil } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, Clock, Pencil, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
@@ -83,7 +83,7 @@ function getStatusVariant(status: Project['status']) {
                     v-if="project.description"
                     class="max-w-2xl text-sm text-muted-foreground"
                 >
-                    {{ project.description }}
+                    {{ project.description || 'No description yet.' }}
                 </p>
             </div>
         </div>
