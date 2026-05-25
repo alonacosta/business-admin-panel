@@ -90,23 +90,55 @@ function getStatusVariant(status: Project['status']) {
 
         <div class="grid gap-4 md:grid-cols-3">
             <div class="rounded-xl border p-5">
-                <p class="text-sm text-muted-foreground">Owner</p>
+                <div
+                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                    <User class="h-4 w-4" />
+                    <span>Owner</span>
+                </div>
                 <p class="mt-2 font-medium">{{ project.owner?.name ?? '-' }}</p>
                 <p class="text-sm text-muted-foreground">
                     {{ project.owner?.email ?? '-' }}
                 </p>
             </div>
             <div class="rounded-xl border p-5">
-                <p class="text-sm text-muted-foreground">Due Date</p>
+                <div
+                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                    <Calendar class="h-4 w-4" />
+                    <span>Due Date</span>
+                </div>
                 <p class="mt-2 font-medium">
                     {{ formatDate(project.due_date) }}
                 </p>
             </div>
             <div class="rounded-xl border p-5">
-                <p class="text-sm text-muted-foreground">Created</p>
+                <div
+                    class="flex items-center gap-2 text-sm text-muted-foreground"
+                >
+                    <Clock class="h-4 w-4" />
+                    <span>Created</span>
+                </div>
                 <p class="mt-2 font-medium">
                     {{ formatDate(project.created_at) }}
                 </p>
+            </div>
+        </div>
+        <div class="rounded-xl border p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold">Project tasks</h2>
+                    <p class="text-sm text-muted-foreground">
+                        Tasks for this project will appear here.
+                    </p>
+                </div>
+                <Button variant="outline" size="sm" disabled>
+                    Add task
+                </Button>
+            </div>
+            <div class="mt-6 rounded-lg border border-dashed p-8 text-center">
+                <p class="text-sm fornmt-medium">No task yet</p>
+                <p class="mt-1 text-sm test-muted-foreground">Create tasks later to break this project into smaller steps.</p>
             </div>
         </div>
     </div>
