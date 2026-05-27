@@ -3,6 +3,7 @@ import { Head, Link } from '@inertiajs/vue3';
 import { ArrowLeft, Calendar, Clock, Pencil, User } from 'lucide-vue-next';
 import { ref } from 'vue';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
+import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/date';
@@ -36,6 +37,7 @@ defineOptions({
 });
 
 const isFormDialogOpen = ref(false);
+const isTaskFormDialogOpen = ref(false);
 
 function getStatusLabel(status: Project['status']) {
     return status.charAt(0).toUpperCase() + status.slice(1);
@@ -156,7 +158,7 @@ function getTaskStatusVariant(status: Task['status']) {
                         Tasks for this project will appear here.
                     </p>
                 </div>
-                <Button variant="outline" size="sm" disabled> Add task </Button>
+                <Button variant="outline" size="sm" @click="isTaskFormDialogOpen = true">Add task </Button>
             </div>
             <div v-if="project.tasks?.length" class="mt-6 space-y-3">
                 <div
@@ -201,5 +203,11 @@ function getTaskStatusVariant(status: Task['status']) {
         v-model:open="isFormDialogOpen"
         :project="project"
         :statuses="statuses"
+    />
+
+    <TaskFormDialog
+        v-model:open="isTaskFormDialogOpen"
+        :project="project"
+        :task-statuses="taskStatuses"
     />
 </template>

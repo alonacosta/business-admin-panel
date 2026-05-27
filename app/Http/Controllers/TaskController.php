@@ -18,7 +18,7 @@ class TaskController extends Controller
         $this->authorize('create', Task::class);
 
         $project->tasks()->create([
-            $request->validated(),
+            ...$request->validated(),
             'owner_id' => $request->user()->id,
         ]);
 

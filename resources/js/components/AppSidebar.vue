@@ -25,7 +25,7 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Project',
+        title: 'Projects',
         href: projectsIndex(),
         icon: FoldersIcon,
     },
