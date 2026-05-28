@@ -4,6 +4,8 @@ import {
     ArrowLeft,
     Calendar,
     Clock,
+    CheckCircle2,
+    Circle,
     Pencil,
     User,
     Edit,
@@ -17,7 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/date';
 import { index } from '@/routes/projects';
-import { destroy } from '@/routes/projects/tasks';
+import { destroy, update } from '@/routes/projects/tasks';
 import type {
     Project,
     ProjectStatusOption,
@@ -118,6 +120,35 @@ function deleteTask(task: Task) {
         },
     );
 }
+
+function toggleTaskCompleted(task: Task) {
+    router.put(
+        update({
+            project: props.project.id,
+            task: task.id,
+        }).url,
+        {
+            title: task.title,
+            description: task.description ?? '',
+            status: task.status === 'completed' ? 'todo' : 'completed',
+            due_date: task.due_date,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => {
+                toast.success(
+                    task.status === 'completed'
+                        ? 'Task marked as todo'
+                        : 'Task completed',
+                );
+            },
+            onError: () => {
+                toast.error('Failed to update task status');
+            },
+        },
+    );
+}
 </script>
 <template>
     <Head :title="project.name" />
@@ -214,7 +245,6 @@ function deleteTask(task: Task) {
                     :variant="
                         selectedTaskStatus === 'all' ? 'default' : 'outline'
                     "
-
                     @click="selectedTaskStatus = 'all'"
                     >All</Button
                 >
@@ -235,27 +265,53 @@ function deleteTask(task: Task) {
                 <div
                     v-for="task in filteredTasks"
                     :key="task.id"
-                    class="flex items-center justify-between gap-2 rounded-lg border p-4"
+                    class="flex items-start justify-between gap-2 rounded-lg border p-4"
                 >
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-medium">
-                                {{ task.title }}
-                            </h3>
-                            <Badge :variant="getTaskStatusVariant(task.status)">
-                                {{ getTaskStatusLabel(task.status) }}
-                            </Badge>
-                        </div>
-                        <p
-                            v-if="task.description"
-                            class="text-sm text-muted-foreground"
+                    <div class="flex min-w-0 flex-1 items-start gap-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="h-7 w-7 shrink-0 rounded-full"
+                            @click="toggleTaskCompleted(task)"
                         >
-                            {{ task.description }}
-                        </p>
-                        <p class="text-sm text-muted-foreground">
-                            Due: {{ formatDate(task.due_date) }}
-                        </p>
+                            <CheckCircle2
+                                v-if="task.status === 'completed'"
+                                class="h-5 w-5 text-green-600"
+                            />
+                            <Circle
+                                v-else
+                                class="h-5 w-5 text-muted-foreground"
+                            />
+                        </Button>
+
+                        <div class="min-w-0 flex-1 space-y-1">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <div class="min-w-0 flex-1 space-y-1">
+                                    <h3 class="font-medium">
+                                        {{ task.title }}
+                                    </h3>
+                                    <Badge
+                                        :variant="
+                                            getTaskStatusVariant(task.status)
+                                        "
+                                    >
+                                        {{ getTaskStatusLabel(task.status) }}
+                                    </Badge>
+                                </div>
+                            </div>
+                            <p
+                                v-if="task.description"
+                                class="text-sm text-muted-foreground"
+                            >
+                                {{ task.description }}
+                            </p>
+                            <p class="text-sm text-muted-foreground">
+                                Due: {{ formatDate(task.due_date) }}
+                            </p>
+                        </div>
                     </div>
+
                     <div class="flex items-center gap-1">
                         <Button
                             type="button"
