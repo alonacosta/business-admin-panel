@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useForm } from '@inertiajs/vue3';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { toast } from 'vue-sonner';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';
@@ -22,18 +22,27 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { store } from '@/routes/projects/tasks';
-import type { Project, TaskFormData, TaskStatusOption } from '@/types/project';
+import { toDateInputValue } from '@/lib/date';
+import { store, update } from '@/routes/projects/tasks';
+import type {
+    Project,
+    Task,
+    TaskFormData,
+    TaskStatusOption,
+} from '@/types/project';
 
 const props = defineProps<{
     open: boolean;
     project: Project;
+    task: Task | null;
     taskStatuses: TaskStatusOption[];
 }>();
 
 const emit = defineEmits<{
     'update:open': [value: boolean];
 }>();
+
+const isEditing = computed(() => !!props.task);
 
 const form = useForm<TaskFormData>({
     title: '',
@@ -49,8 +58,31 @@ watch(
 
         if (!open) {
             form.reset();
+
+            return;
+        }
+
+        if (!props.task) {
+            form.reset();
         }
     },
+);
+
+watch(
+    () => props.task,
+    (task) => {
+        form.clearErrors();
+
+        if (task) {
+            form.title = task.title;
+            form.description = task.description ?? '';
+            form.status = task.status;
+            form.due_date = toDateInputValue(task.due_date);
+        } else {
+            form.reset();
+        }
+    },
+    { immediate: true },
 );
 
 function closeDialog() {
@@ -65,6 +97,24 @@ function getPayload() {
 }
 
 function submit() {
+    if (isEditing.value && props.task) {
+        form.transform(() => getPayload()).put(
+            update({
+                project: props.project.id,
+                task: props.task.id,
+            }).url,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success('Task updated successfully');
+                    closeDialog();
+                },
+            },
+        );
+
+        return;
+    }
+
     form.transform(() => getPayload()).post(store(props.project.id).url, {
         preserveScroll: true,
         onSuccess: () => {
@@ -78,9 +128,13 @@ function submit() {
     <Dialog :open="open" @update:open="emit('update:open', $event)">
         <DialogContent class="sm:max-w-xl">
             <DialogHeader>
-                <DialogTitle>Add Task</DialogTitle>
+                <DialogTitle>{{
+                    isEditing ? 'Edit Task' : 'Add Task'
+                }}</DialogTitle>
                 <DialogDescription
-                    >Create a new task for this project</DialogDescription
+                    >{{ isEditing
+                    ? 'Update the task details.'
+                    : 'Create a new task for this project' }}</DialogDescription
                 >
             </DialogHeader>
 
@@ -149,7 +203,7 @@ function submit() {
                         Cancel
                     </Button>
                     <Button type="submit" :disabled="form.processing">
-                        {{ form.processing ? 'Saving...' : 'Create Task' }}
+                        {{ form.processing ? 'Saving...' : isEditing ? 'Update Task' : 'Create Task' }}
                     </Button>
                 </DialogFooter>
             </form>

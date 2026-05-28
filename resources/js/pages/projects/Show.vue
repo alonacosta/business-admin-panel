@@ -1,13 +1,23 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, Clock, Pencil, User } from 'lucide-vue-next';
+import { Head, Link, router } from '@inertiajs/vue3';
+import {
+    ArrowLeft,
+    Calendar,
+    Clock,
+    Pencil,
+    User,
+    Edit,
+    Trash2,
+} from 'lucide-vue-next';
 import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDate } from '@/lib/date';
 import { index } from '@/routes/projects';
+import { destroy } from '@/routes/projects/tasks';
 import type {
     Project,
     ProjectStatusOption,
@@ -15,7 +25,7 @@ import type {
     TaskStatusOption,
 } from '@/types/project';
 
-defineProps<{
+const props = defineProps<{
     project: Project;
     statuses: ProjectStatusOption[];
     taskStatuses: TaskStatusOption[];
@@ -38,6 +48,7 @@ defineOptions({
 
 const isFormDialogOpen = ref(false);
 const isTaskFormDialogOpen = ref(false);
+const selectedTask = ref<Task | null>(null);
 
 function getStatusLabel(status: Project['status']) {
     return status.charAt(0).toUpperCase() + status.slice(1);
@@ -73,6 +84,29 @@ function getTaskStatusVariant(status: Task['status']) {
 
     return 'outline';
 }
+
+function openCreateTaskDialog() {
+    selectedTask.value = null;
+    isTaskFormDialogOpen.value = true;
+}
+
+function openEditTaskDialog(task: Task) {
+    selectedTask.value = task;
+    isTaskFormDialogOpen.value = true;
+}
+
+function deleteTask(task: Task) {
+    router.delete(
+        destroy({
+            project: props.project.id,
+            task: task.id,
+        }).url,
+        {
+            preserveScroll: true,
+            onSuccess: () => toast.success('Task deleted successfully'),
+        },
+    );
+}
 </script>
 <template>
     <Head :title="project.name" />
@@ -106,9 +140,7 @@ function getTaskStatusVariant(status: Task['status']) {
                     }}</Badge>
                 </div>
 
-                <p
-                    class="max-w-2xl text-sm text-muted-foreground"
-                >
+                <p class="max-w-2xl text-sm text-muted-foreground">
                     {{ project.description || 'No description yet.' }}
                 </p>
             </div>
@@ -158,7 +190,12 @@ function getTaskStatusVariant(status: Task['status']) {
                         Tasks for this project will appear here.
                     </p>
                 </div>
-                <Button variant="outline" size="sm" @click="isTaskFormDialogOpen = true">Add task </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    @click="openCreateTaskDialog"
+                    >Add task
+                </Button>
             </div>
             <div v-if="project.tasks?.length" class="mt-6 space-y-3">
                 <div
@@ -185,14 +222,34 @@ function getTaskStatusVariant(status: Task['status']) {
                             Due: {{ formatDate(task.due_date) }}
                         </p>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="h-8 w-8"
+                            @click="openEditTaskDialog(task)"
+                        >
+                            <Edit class="h-4 w-4" />
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            class="h-8 w-8 text-destructive hover:text-destructive/90"
+                            @click="deleteTask(task)"
+                        >
+                            <Trash2 class="h-4 w-4" />
+                        </Button>
+                    </div>
                 </div>
             </div>
             <div
                 v-else
                 class="mt-6 rounded-lg border border-dashed p-8 text-center"
             >
-                <p class="font-medium text-sm">No task yet</p>
-                <p class="text-muted-foreground mt-1 text-sm">
+                <p class="text-sm font-medium">No task yet</p>
+                <p class="mt-1 text-sm text-muted-foreground">
                     Create tasks later to break this project into smaller steps.
                 </p>
             </div>
@@ -208,6 +265,7 @@ function getTaskStatusVariant(status: Task['status']) {
     <TaskFormDialog
         v-model:open="isTaskFormDialogOpen"
         :project="project"
+        :task="selectedTask"
         :task-statuses="taskStatuses"
     />
 </template>
