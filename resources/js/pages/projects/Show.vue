@@ -9,7 +9,7 @@ import {
     Edit,
     Trash2,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { toast } from 'vue-sonner';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
@@ -49,6 +49,7 @@ defineOptions({
 const isFormDialogOpen = ref(false);
 const isTaskFormDialogOpen = ref(false);
 const selectedTask = ref<Task | null>(null);
+const selectedTaskStatus = ref<Task['status'] | 'all'>('all');
 
 function getStatusLabel(status: Project['status']) {
     return status.charAt(0).toUpperCase() + status.slice(1);
@@ -84,6 +85,16 @@ function getTaskStatusVariant(status: Task['status']) {
 
     return 'outline';
 }
+
+const filteredTasks = computed(() => {
+    if (selectedTaskStatus.value === 'all') {
+        return props.project.tasks ?? [];
+    }
+
+    return (props.project.tasks ?? []).filter(
+        (task) => task.status === selectedTaskStatus.value,
+    );
+});
 
 function openCreateTaskDialog() {
     selectedTask.value = null;
@@ -197,11 +208,34 @@ function deleteTask(task: Task) {
                     >Add task
                 </Button>
             </div>
-            <div v-if="project.tasks?.length" class="mt-6 space-y-3">
+            <div class="mt-6 flex flex-wrap gap-2">
+                <Button
+                    size="sm"
+                    :variant="
+                        selectedTaskStatus === 'all' ? 'default' : 'outline'
+                    "
+
+                    @click="selectedTaskStatus = 'all'"
+                    >All</Button
+                >
+                <Button
+                    v-for="status in taskStatuses"
+                    :key="status.value"
+                    size="sm"
+                    :variant="
+                        selectedTaskStatus === status.value
+                            ? 'default'
+                            : 'outline'
+                    "
+                    @click="selectedTaskStatus = status.value"
+                    >{{ status.label }}</Button
+                >
+            </div>
+            <div v-if="filteredTasks?.length" class="mt-6 space-y-3">
                 <div
-                    v-for="task in project.tasks"
+                    v-for="task in filteredTasks"
                     :key="task.id"
-                    class="flex items-center justify-between rounded-lg border p-4"
+                    class="flex items-center justify-between gap-2 rounded-lg border p-4"
                 >
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
@@ -222,7 +256,7 @@ function deleteTask(task: Task) {
                             Due: {{ formatDate(task.due_date) }}
                         </p>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1">
                         <Button
                             type="button"
                             variant="ghost"
