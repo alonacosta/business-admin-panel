@@ -53,6 +53,17 @@ const isTaskFormDialogOpen = ref(false);
 const selectedTask = ref<Task | null>(null);
 const selectedTaskStatus = ref<Task['status'] | 'all'>('all');
 
+const taskCounts = computed(() => {
+    const tasks = props.project.tasks ?? [];
+
+    return {
+        total: tasks.length,
+        todo: tasks.filter((task) => task.status === 'todo').length,
+        inProgress: tasks.filter((task) => task.status === 'in_progress').length,
+        completed: tasks.filter((task) => task.status === 'completed').length,
+    };
+});
+
 function getStatusLabel(status: Project['status']) {
     return status.charAt(0).toUpperCase() + status.slice(1);
 }
@@ -246,7 +257,7 @@ function toggleTaskCompleted(task: Task) {
                         selectedTaskStatus === 'all' ? 'default' : 'outline'
                     "
                     @click="selectedTaskStatus = 'all'"
-                    >All</Button
+                    >All ({{ taskCounts.total }})</Button
                 >
                 <Button
                     v-for="status in taskStatuses"
@@ -258,7 +269,14 @@ function toggleTaskCompleted(task: Task) {
                             : 'outline'
                     "
                     @click="selectedTaskStatus = status.value"
-                    >{{ status.label }}</Button
+                    >{{ status.label }}
+                    ({{ status.value === 'todo'
+                    ? taskCounts.todo
+                        : status.value === 'in_progress'
+                    ? taskCounts.inProgress
+                            : taskCounts.completed
+                    }})
+                </Button
                 >
             </div>
             <div v-if="filteredTasks?.length" class="mt-6 space-y-3">
