@@ -63,6 +63,7 @@ const selectedTaskStatus = ref<Task['status'] | 'all'>('all');
 const selectedTaskSort = ref<'status' | 'due_date' | 'newest' | 'oldest'>(
     'status',
 );
+const viewMode = ref<'list' | 'board'>('list');
 
 const taskCounts = computed(() => {
     const tasks = props.project.tasks ?? [];
@@ -84,6 +85,16 @@ const projectProgress = computed(() => {
     return Math.round(
         (taskCounts.value.completed / taskCounts.value.total) * 100,
     );
+});
+
+const boardTasks = computed(() => {
+    const tasks = props.project.tasks ?? [];
+
+    return {
+        todo: tasks.filter((task) => task.status === 'todo'),
+        inProgress: tasks.filter((task) => task.status === 'in_progress'),
+        completed: tasks.filter((task) => task.status === 'completed'),
+    };
 });
 
 function getStatusLabel(status: Project['status']) {
@@ -309,7 +320,9 @@ function toggleTaskCompleted(task: Task) {
                 </div>
                 <Progress :model-value="projectProgress" />
             </div>
-            <div class="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div
+                class="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+            >
                 <div class="flex flex-wrap gap-2">
                     <Button
                         size="sm"
@@ -355,9 +368,29 @@ function toggleTaskCompleted(task: Task) {
                         </SelectContent>
                     </Select>
                 </div>
+
+                <div>
+                    <Button
+                        size="sm"
+                        :variant="viewMode === 'list' ? 'default' : 'outline'"
+                        @click="viewMode = 'list'"
+                    >
+                        List
+                    </Button>
+                    <Button
+                        size="sm"
+                        :variant="viewMode === 'board' ? 'default' : 'outline'"
+                        @click="viewMode = 'board'"
+                    >
+                        Board
+                    </Button>
+                </div>
             </div>
 
-            <div v-if="filteredTasks?.length" class="mt-6 space-y-3">
+            <div
+                v-if="viewMode === 'list' && filteredTasks?.length"
+                class="mt-6 space-y-3"
+            >
                 <div
                     v-for="task in filteredTasks"
                     :key="task.id"
@@ -431,7 +464,102 @@ function toggleTaskCompleted(task: Task) {
                 </div>
             </div>
             <div
-                v-else
+                v-if="viewMode === 'board'"
+                class="mt-6 grid gap-4 lg:grid-cols-3"
+            >
+                <!-- To do -->
+                <div
+                    class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
+                >
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-semibold">Todo</h3>
+                        <Badge variant="outline">
+                            {{ boardTasks.todo.length }}
+                        </Badge>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div
+                            v-for="task in boardTasks.todo"
+                            :key="task.id"
+                            class="rounded-xl border p-3"
+                        >
+                            <p class="font-medium">{{ task.title }}</p>
+                            <p
+                                v-if="task.description"
+                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
+                            >
+                                {{ task.description }}
+                            </p>
+                            <p class="mt-2 text-xs text-muted-foreground">
+                                Due {{ formatDate(task.due_date) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- In progress -->
+                <div
+                    class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
+                >
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-semibold">In Progress</h3>
+                        <Badge variant="outline">
+                            {{ boardTasks.inProgress.length }}
+                        </Badge>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div
+                            v-for="task in boardTasks.inProgress"
+                            :key="task.id"
+                            class="rounded-xl border p-3"
+                        >
+                            <p class="font-medium">{{ task.title }}</p>
+                            <p
+                                v-if="task.description"
+                                class="line-clamp-3 mt-1 text-sm text-muted-foreground"
+                            >
+                                {{ task.description }}
+                            </p>
+                            <p class="mt-2 text-xs text-muted-foreground">
+                                Due {{ formatDate(task.due_date) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Completed -->
+                <div
+                    class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
+                >
+                    <div class="mb-4 flex items-center justify-between">
+                        <h3 class="font-semibold">Completed</h3>
+                        <Badge variant="outline">
+                            {{ boardTasks.completed.length }}
+                        </Badge>
+                    </div>
+
+                    <div class="space-y-3">
+                        <div
+                            v-for="task in boardTasks.completed"
+                            :key="task.id"
+                            class="rounded-xl border p-3"
+                        >
+                            <p class="font-medium">{{ task.title }}</p>
+                            <p
+                                v-if="task.description"
+                                class="line-clamp-3 mt-1 text-sm text-muted-foreground"
+                            >
+                                {{ task.description }}
+                            </p>
+                            <p class="mt-2 text-xs text-muted-foreground">
+                                Due {{ formatDate(task.due_date) }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div
+                v-if="!filteredTasks?.length"
                 class="mt-6 rounded-lg border border-dashed p-8 text-center"
             >
                 <p class="text-sm font-medium">No task yet</p>
