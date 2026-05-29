@@ -18,6 +18,13 @@ import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+    Select,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+} from '@/components/ui/select';
 import { formatDate } from '@/lib/date';
 import { index } from '@/routes/projects';
 import { destroy, update } from '@/routes/projects/tasks';
@@ -53,6 +60,9 @@ const isFormDialogOpen = ref(false);
 const isTaskFormDialogOpen = ref(false);
 const selectedTask = ref<Task | null>(null);
 const selectedTaskStatus = ref<Task['status'] | 'all'>('all');
+const selectedTaskSort = ref<'status' | 'due_date' | 'newest' | 'oldest'>(
+    'status',
+);
 
 const taskCounts = computed(() => {
     const tasks = props.project.tasks ?? [];
@@ -112,13 +122,41 @@ function getTaskStatusVariant(status: Task['status']) {
 }
 
 const filteredTasks = computed(() => {
-    if (selectedTaskStatus.value === 'all') {
-        return props.project.tasks ?? [];
+    let tasks = props.project.tasks ?? [];
+
+    if (selectedTaskStatus.value !== 'all') {
+        tasks = tasks.filter(
+            (task) => task.status === selectedTaskStatus.value,
+        );
     }
 
-    return (props.project.tasks ?? []).filter(
-        (task) => task.status === selectedTaskStatus.value,
-    );
+    return [...tasks].sort((a, b) => {
+        if (selectedTaskSort.value === 'newest') {
+            return (
+                new Date(b.created_at).getTime() -
+                new Date(a.created_at).getTime()
+            );
+        }
+
+        if (selectedTaskSort.value === 'oldest') {
+            return (
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime()
+            );
+        }
+
+        if (selectedTaskSort.value === 'due_date') {
+            return (a.due_date ?? '').localeCompare(b.due_date ?? '');
+        }
+
+        const order = {
+            todo: 1,
+            in_progress: 2,
+            completed: 3,
+        };
+
+        return order[a.status] - order[b.status];
+    });
 });
 
 function openCreateTaskDialog() {
@@ -271,33 +309,52 @@ function toggleTaskCompleted(task: Task) {
                 </div>
                 <Progress :model-value="projectProgress" />
             </div>
-            <div class="mt-6 flex flex-wrap gap-2">
-                <Button
-                    size="sm"
-                    :variant="
-                        selectedTaskStatus === 'all' ? 'default' : 'outline'
-                    "
-                    @click="selectedTaskStatus = 'all'"
-                    >All ({{ taskCounts.total }})</Button
-                >
-                <Button
-                    v-for="status in taskStatuses"
-                    :key="status.value"
-                    size="sm"
-                    :variant="
-                        selectedTaskStatus === status.value
-                            ? 'default'
-                            : 'outline'
-                    "
-                    @click="selectedTaskStatus = status.value"
-                    >{{ status.label }} ({{
-                        status.value === 'todo'
-                            ? taskCounts.todo
-                            : status.value === 'in_progress'
-                              ? taskCounts.inProgress
-                              : taskCounts.completed
-                    }})
-                </Button>
+            <div class="mt-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div class="flex flex-wrap gap-2">
+                    <Button
+                        size="sm"
+                        :variant="
+                            selectedTaskStatus === 'all' ? 'default' : 'outline'
+                        "
+                        @click="selectedTaskStatus = 'all'"
+                        >All ({{ taskCounts.total }})</Button
+                    >
+                    <Button
+                        v-for="status in taskStatuses"
+                        :key="status.value"
+                        size="sm"
+                        :variant="
+                            selectedTaskStatus === status.value
+                                ? 'default'
+                                : 'outline'
+                        "
+                        @click="selectedTaskStatus = status.value"
+                        >{{ status.label }} ({{
+                            status.value === 'todo'
+                                ? taskCounts.todo
+                                : status.value === 'in_progress'
+                                  ? taskCounts.inProgress
+                                  : taskCounts.completed
+                        }})
+                    </Button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <Select v-model="selectedTaskSort">
+                        <span class="text-sm text-muted-foreground">
+                            Sort by
+                        </span>
+                        <SelectTrigger class="w-40" size="sm">
+                            <SelectValue placeholder="Sort by" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                            <SelectItem value="status">Status</SelectItem>
+                            <SelectItem value="due_date">Due date</SelectItem>
+                            <SelectItem value="newest">Newest</SelectItem>
+                            <SelectItem value="oldest">Oldest</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
 
             <div v-if="filteredTasks?.length" class="mt-6 space-y-3">
