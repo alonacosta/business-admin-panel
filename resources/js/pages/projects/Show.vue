@@ -17,6 +17,7 @@ import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import { formatDate } from '@/lib/date';
 import { index } from '@/routes/projects';
 import { destroy, update } from '@/routes/projects/tasks';
@@ -59,9 +60,20 @@ const taskCounts = computed(() => {
     return {
         total: tasks.length,
         todo: tasks.filter((task) => task.status === 'todo').length,
-        inProgress: tasks.filter((task) => task.status === 'in_progress').length,
+        inProgress: tasks.filter((task) => task.status === 'in_progress')
+            .length,
         completed: tasks.filter((task) => task.status === 'completed').length,
     };
+});
+
+const projectProgress = computed(() => {
+    if (taskCounts.value.total === 0) {
+        return 0;
+    }
+
+    return Math.round(
+        (taskCounts.value.completed / taskCounts.value.total) * 100,
+    );
 });
 
 function getStatusLabel(status: Project['status']) {
@@ -250,6 +262,15 @@ function toggleTaskCompleted(task: Task) {
                     >Add task
                 </Button>
             </div>
+            <div class="mt-5 space-y-2">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="font-medium">Progress</span>
+                    <span class="text-muted-foreground">
+                        {{ projectProgress }}%
+                    </span>
+                </div>
+                <Progress :model-value="projectProgress" />
+            </div>
             <div class="mt-6 flex flex-wrap gap-2">
                 <Button
                     size="sm"
@@ -269,16 +290,16 @@ function toggleTaskCompleted(task: Task) {
                             : 'outline'
                     "
                     @click="selectedTaskStatus = status.value"
-                    >{{ status.label }}
-                    ({{ status.value === 'todo'
-                    ? taskCounts.todo
-                        : status.value === 'in_progress'
-                    ? taskCounts.inProgress
-                            : taskCounts.completed
+                    >{{ status.label }} ({{
+                        status.value === 'todo'
+                            ? taskCounts.todo
+                            : status.value === 'in_progress'
+                              ? taskCounts.inProgress
+                              : taskCounts.completed
                     }})
-                </Button
-                >
+                </Button>
             </div>
+
             <div v-if="filteredTasks?.length" class="mt-6 space-y-3">
                 <div
                     v-for="task in filteredTasks"
