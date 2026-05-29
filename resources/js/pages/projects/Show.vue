@@ -12,6 +12,7 @@ import {
     Trash2,
 } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { VueDraggable } from 'vue-draggable-plus';
 import { toast } from 'vue-sonner';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
 import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
@@ -218,6 +219,36 @@ function toggleTaskCompleted(task: Task) {
             onError: () => {
                 toast.error('Failed to update task status');
             },
+        },
+    );
+}
+
+function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
+    const taskId = Number(event.item.dataset.taskId);
+    const status = event.to.dataset.status as Task['status'];
+
+    const task = props.project.tasks?.find((task) => task.id === taskId);
+
+    if (!task || !status || task.status === status) {
+        return;
+    }
+
+    router.put(
+        update({
+            project: props.project.id,
+            task: task.id,
+        }).url,
+        {
+            title: task.title,
+            description: task.description ?? '',
+            status,
+            due_date: task.due_date,
+        },
+        {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: () => toast.success('Task status updated'),
+            onError: () => toast.error('Failed to update status'),
         },
     );
 }
@@ -478,10 +509,18 @@ function toggleTaskCompleted(task: Task) {
                         </Badge>
                     </div>
 
-                    <div class="space-y-3">
+                    <VueDraggable
+                        :model-value="boardTasks.todo"
+                        group="tasks"
+                        item-key="id"
+                        class="space-y-3"
+                        data-status="todo"
+                        @end="onDragEnd"
+                    >
                         <div
                             v-for="task in boardTasks.todo"
                             :key="task.id"
+                            :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
                             <p class="font-medium">{{ task.title }}</p>
@@ -495,7 +534,7 @@ function toggleTaskCompleted(task: Task) {
                                 Due {{ formatDate(task.due_date) }}
                             </p>
                         </div>
-                    </div>
+                    </VueDraggable>
                 </div>
                 <!-- In progress -->
                 <div
@@ -508,16 +547,24 @@ function toggleTaskCompleted(task: Task) {
                         </Badge>
                     </div>
 
-                    <div class="space-y-3">
+                    <VueDraggable
+                        :model-value="boardTasks.inProgress"
+                        group="tasks"
+                        item-key="id"
+                        class="space-y-3"
+                        data-status="in_progress"
+                        @end="onDragEnd"
+                    >
                         <div
                             v-for="task in boardTasks.inProgress"
                             :key="task.id"
+                            :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
                             <p class="font-medium">{{ task.title }}</p>
                             <p
                                 v-if="task.description"
-                                class="line-clamp-3 mt-1 text-sm text-muted-foreground"
+                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
                             >
                                 {{ task.description }}
                             </p>
@@ -525,7 +572,7 @@ function toggleTaskCompleted(task: Task) {
                                 Due {{ formatDate(task.due_date) }}
                             </p>
                         </div>
-                    </div>
+                    </VueDraggable>
                 </div>
                 <!-- Completed -->
                 <div
@@ -538,16 +585,24 @@ function toggleTaskCompleted(task: Task) {
                         </Badge>
                     </div>
 
-                    <div class="space-y-3">
+                    <VueDraggable
+                        :model-value="boardTasks.completed"
+                        group="tasks"
+                        item-key="id"
+                        class="space-y-3"
+                        data-status="completed"
+                        @end="onDragEnd"
+                    >
                         <div
                             v-for="task in boardTasks.completed"
                             :key="task.id"
+                            :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
                             <p class="font-medium">{{ task.title }}</p>
                             <p
                                 v-if="task.description"
-                                class="line-clamp-3 mt-1 text-sm text-muted-foreground"
+                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
                             >
                                 {{ task.description }}
                             </p>
@@ -555,7 +610,7 @@ function toggleTaskCompleted(task: Task) {
                                 Due {{ formatDate(task.due_date) }}
                             </p>
                         </div>
-                    </div>
+                    </VueDraggable>
                 </div>
             </div>
             <div
