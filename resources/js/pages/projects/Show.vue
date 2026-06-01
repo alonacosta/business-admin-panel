@@ -523,16 +523,42 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
-                            <p class="font-medium">{{ task.title }}</p>
-                            <p
-                                v-if="task.description"
-                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
-                            >
-                                {{ task.description }}
-                            </p>
-                            <p class="mt-2 text-xs text-muted-foreground">
-                                Due {{ formatDate(task.due_date) }}
-                            </p>
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="font-medium">{{ task.title }}</p>
+                                    <p
+                                        v-if="task.description"
+                                        class="mt-1 line-clamp-3 text-sm text-muted-foreground"
+                                    >
+                                        {{ task.description }}
+                                    </p>
+                                    <p
+                                        class="mt-2 text-xs text-muted-foreground"
+                                    >
+                                        Due {{ formatDate(task.due_date) }}
+                                    </p>
+                                </div>
+                                <div class="shrink-0 items-center gap-1">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7"
+                                        @click="openEditTaskDialog(task)"
+                                    >
+                                        <Edit class="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7 text-destructive hover:text-destructive/90"
+                                        @click="deleteTask(task)"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </VueDraggable>
                 </div>
@@ -561,16 +587,42 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
-                            <p class="font-medium">{{ task.title }}</p>
-                            <p
-                                v-if="task.description"
-                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
-                            >
-                                {{ task.description }}
-                            </p>
-                            <p class="mt-2 text-xs text-muted-foreground">
-                                Due {{ formatDate(task.due_date) }}
-                            </p>
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="font-medium">{{ task.title }}</p>
+                                    <p
+                                        v-if="task.description"
+                                        class="mt-1 line-clamp-3 text-sm text-muted-foreground"
+                                    >
+                                        {{ task.description }}
+                                    </p>
+                                    <p
+                                        class="mt-2 text-xs text-muted-foreground"
+                                    >
+                                        Due {{ formatDate(task.due_date) }}
+                                    </p>
+                                </div>
+                                <div class="shrink-0 items-center gap-1">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7"
+                                        @click="openEditTaskDialog(task)"
+                                    >
+                                        <Edit class="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7 text-destructive hover:text-destructive/90"
+                                        @click="deleteTask(task)"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </VueDraggable>
                 </div>
@@ -599,16 +651,42 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
                         >
-                            <p class="font-medium">{{ task.title }}</p>
-                            <p
-                                v-if="task.description"
-                                class="mt-1 line-clamp-3 text-sm text-muted-foreground"
-                            >
-                                {{ task.description }}
-                            </p>
-                            <p class="mt-2 text-xs text-muted-foreground">
-                                Due {{ formatDate(task.due_date) }}
-                            </p>
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="min-w-0">
+                                    <p class="font-medium">{{ task.title }}</p>
+                                    <p
+                                        v-if="task.description"
+                                        class="mt-1 line-clamp-3 text-sm text-muted-foreground"
+                                    >
+                                        {{ task.description }}
+                                    </p>
+                                    <p
+                                        class="mt-2 text-xs text-muted-foreground"
+                                    >
+                                        Due {{ formatDate(task.due_date) }}
+                                    </p>
+                                </div>
+                                <div class="shrink-0 items-center gap-1">
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7"
+                                        @click="openEditTaskDialog(task)"
+                                    >
+                                        <Edit class="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        class="h-7 w-7 text-destructive hover:text-destructive/90"
+                                        @click="deleteTask(task)"
+                                    >
+                                        <Trash2 class="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
                     </VueDraggable>
                 </div>
