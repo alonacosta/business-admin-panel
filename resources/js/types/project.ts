@@ -57,6 +57,7 @@ export type Task = {
     created_at: string;
     updated_at: string;
     owner?: ProjectOwner;
+    comments?: TaskComment[];
 };
 
 export type TaskFormData = {
@@ -69,4 +70,15 @@ export type TaskFormData = {
 export type TaskStatusOption = {
     value: TaskStatus;
     label: string;
+};
+
+export type TaskComment = {
+    id: number;
+    content: string;
+    created_at: string;
+    user: {
+        id: number;
+        name: string;
+        email: string;
+    } | null;
 };

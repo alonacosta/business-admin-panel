@@ -11,10 +11,11 @@ import {
     Edit,
     Trash2,
 } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
 import { toast } from 'vue-sonner';
 import ProjectFormDialog from '@/components/projects/ProjectFormDialog.vue';
+import TaskDetailsDialog from '@/components/projects/TaskDetailsDialog.vue';
 import TaskFormDialog from '@/components/projects/TaskFormDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -65,6 +66,7 @@ const selectedTaskSort = ref<'status' | 'due_date' | 'newest' | 'oldest'>(
     'status',
 );
 const viewMode = ref<'list' | 'board'>('list');
+const isTaskDetailsOpen = ref(false);
 
 const taskCounts = computed(() => {
     const tasks = props.project.tasks ?? [];
@@ -194,6 +196,10 @@ function deleteTask(task: Task) {
     );
 }
 
+function openTaskDetails(task: Task) {
+    selectedTask.value = task;
+    isTaskDetailsOpen.value = true;
+}
 function toggleTaskCompleted(task: Task) {
     router.put(
         update({
@@ -252,6 +258,19 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
         },
     );
 }
+
+watch(
+    () => props.project.tasks,
+    (tasks) => {
+        if(!selectedTask.value){
+            return;
+        }
+
+        selectedTask.value = tasks?.find(
+            (task) => task.id ===  selectedTask.value?.id,
+        ) ?? selectedTask.value;
+    },
+);
 </script>
 <template>
     <Head :title="project.name" />
@@ -427,7 +446,10 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                     :key="task.id"
                     class="flex items-start justify-between gap-2 rounded-lg border p-4"
                 >
-                    <div class="flex min-w-0 flex-1 items-start gap-2">
+                    <div
+                        class="flex min-w-0 flex-1 cursor-pointer items-start gap-2"
+                        @click="openTaskDetails(task)"
+                    >
                         <Button
                             type="button"
                             variant="ghost"
@@ -522,6 +544,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :key="task.id"
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
+                            @click="openTaskDetails(task)"
                         >
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
@@ -544,7 +567,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7"
-                                        @click="openEditTaskDialog(task)"
+                                        @click.stop="openEditTaskDialog(task)"
                                     >
                                         <Edit class="h-4 w-4" />
                                     </Button>
@@ -553,7 +576,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7 text-destructive hover:text-destructive/90"
-                                        @click="deleteTask(task)"
+                                        @click.stop="deleteTask(task)"
                                     >
                                         <Trash2 class="h-4 w-4" />
                                     </Button>
@@ -586,6 +609,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :key="task.id"
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
+                            @click="openTaskDetails(task)"
                         >
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
@@ -608,7 +632,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7"
-                                        @click="openEditTaskDialog(task)"
+                                        @click.stop="openEditTaskDialog(task)"
                                     >
                                         <Edit class="h-4 w-4" />
                                     </Button>
@@ -617,7 +641,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7 text-destructive hover:text-destructive/90"
-                                        @click="deleteTask(task)"
+                                        @click.stop="deleteTask(task)"
                                     >
                                         <Trash2 class="h-4 w-4" />
                                     </Button>
@@ -650,6 +674,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                             :key="task.id"
                             :data-task-id="task.id"
                             class="rounded-xl border p-3"
+                            @click="openTaskDetails(task)"
                         >
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
@@ -672,7 +697,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7"
-                                        @click="openEditTaskDialog(task)"
+                                        @click.stop="openEditTaskDialog(task)"
                                     >
                                         <Edit class="h-4 w-4" />
                                     </Button>
@@ -681,7 +706,7 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
                                         variant="ghost"
                                         size="icon"
                                         class="h-7 w-7 text-destructive hover:text-destructive/90"
-                                        @click="deleteTask(task)"
+                                        @click.stop="deleteTask(task)"
                                     >
                                         <Trash2 class="h-4 w-4" />
                                     </Button>
@@ -714,5 +739,11 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
         :project="project"
         :task="selectedTask"
         :task-statuses="taskStatuses"
+    />
+
+    <TaskDetailsDialog
+        v-model:open="isTaskDetailsOpen"
+        :task="selectedTask"
+        :project-id="project.id"
     />
 </template>
