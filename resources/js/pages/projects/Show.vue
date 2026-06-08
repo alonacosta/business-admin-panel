@@ -180,11 +180,13 @@ const filteredTasks = computed(() => {
 
 function openCreateTaskDialog() {
     selectedTask.value = null;
+    isTaskDetailsOpen.value = false;
     isTaskFormDialogOpen.value = true;
 }
 
 function openEditTaskDialog(task: Task) {
     selectedTask.value = task;
+    isTaskDetailsOpen.value = false;
     isTaskFormDialogOpen.value = true;
 }
 

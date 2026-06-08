@@ -22,6 +22,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('projects.tasks.destroy');
     Route::post('projects/{project}/tasks/{task}/comments', [TaskCommentController::class, 'store'])
         ->name('projects.tasks.comments.store');
+    Route::put('projects/{project}/tasks/{task}/comments/{comment}', [TaskCommentController::class, 'update'])
+        ->name('projects.tasks.comments.update');
+    Route::delete('projects/{project}/tasks/{task}/comments/{comment}', [TaskCommentController::class, 'destroy'])
+        ->name('projects.tasks.comments.destroy');
 });
 
 require __DIR__.'/settings.php';
