@@ -10,6 +10,7 @@ import {
     User,
     Edit,
     Trash2,
+    MessageCircle,
 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 import { VueDraggable } from 'vue-draggable-plus';
@@ -99,6 +100,10 @@ const boardTasks = computed(() => {
         completed: tasks.filter((task) => task.status === 'completed'),
     };
 });
+
+function getCommentsCount(task: Task) {
+    return task.comments?.length ?? 0;
+}
 
 function getStatusLabel(status: Project['status']) {
     return status.charAt(0).toUpperCase() + status.slice(1);
@@ -262,13 +267,13 @@ function onDragEnd(event: { item: HTMLElement; to: HTMLElement }) {
 watch(
     () => props.project.tasks,
     (tasks) => {
-        if(!selectedTask.value){
+        if (!selectedTask.value) {
             return;
         }
 
-        selectedTask.value = tasks?.find(
-            (task) => task.id ===  selectedTask.value?.id,
-        ) ?? selectedTask.value;
+        selectedTask.value =
+            tasks?.find((task) => task.id === selectedTask.value?.id) ??
+            selectedTask.value;
     },
 );
 </script>
@@ -488,9 +493,20 @@ watch(
                             >
                                 {{ task.description }}
                             </p>
-                            <p class="text-sm text-muted-foreground">
-                                Due: {{ formatDate(task.due_date) }}
-                            </p>
+                            <div
+                                class="mt-2 flex items-center gap-3 text-sm text-muted-foreground"
+                            >
+                                <span
+                                    >Due: {{ formatDate(task.due_date) }}</span
+                                >
+                                <span
+                                    v-if="getCommentsCount(task) > 0"
+                                    class="flex items-center gap-1"
+                                >
+                                    <MessageCircle class="h-4 w-4" />
+                                    {{ getCommentsCount(task) }}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
@@ -555,11 +571,23 @@ watch(
                                     >
                                         {{ task.description }}
                                     </p>
-                                    <p
-                                        class="mt-2 text-xs text-muted-foreground"
+                                    <div
+                                        class="mt-2 flex items-center gap-3 text-xs text-muted-foreground"
                                     >
-                                        Due {{ formatDate(task.due_date) }}
-                                    </p>
+                                        <span>
+                                            Due
+                                            {{ formatDate(task.due_date) }}
+                                        </span>
+                                        <span
+                                            v-if="getCommentsCount(task) > 0"
+                                            class="flex items-center gap-1"
+                                        >
+                                            <MessageCircle
+                                                class="h-3.5 w-3.5"
+                                            />
+                                            {{ getCommentsCount(task) }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="shrink-0 items-center gap-1">
                                     <Button
@@ -620,11 +648,23 @@ watch(
                                     >
                                         {{ task.description }}
                                     </p>
-                                    <p
-                                        class="mt-2 text-xs text-muted-foreground"
+                                    <div
+                                        class="mt-2 flex items-center gap-2 text-xs text-muted-foreground"
                                     >
-                                        Due {{ formatDate(task.due_date) }}
-                                    </p>
+                                        <span>
+                                            Due
+                                            {{ formatDate(task.due_date) }}
+                                        </span>
+                                        <span
+                                            v-if="getCommentsCount(task) > 0"
+                                            class="flex items-center gap-1"
+                                        >
+                                            <MessageCircle
+                                                class="h-3.5 w-3.5"
+                                            />
+                                            {{ getCommentsCount(task) }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="shrink-0 items-center gap-1">
                                     <Button
@@ -685,11 +725,23 @@ watch(
                                     >
                                         {{ task.description }}
                                     </p>
-                                    <p
-                                        class="mt-2 text-xs text-muted-foreground"
+                                    <div
+                                        class="mt-2 flex items-center gap-3 text-xs text-muted-foreground"
                                     >
-                                        Due {{ formatDate(task.due_date) }}
-                                    </p>
+                                        <span>
+                                            Due
+                                            {{ formatDate(task.due_date) }}
+                                        </span>
+                                        <span
+                                            v-if="getCommentsCount(task) > 0"
+                                            class="flex items-center gap-1"
+                                        >
+                                            <MessageCircle
+                                                class="h-3.5 w-3.5"
+                                            />
+                                            {{ getCommentsCount(task) }}
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="shrink-0 items-center gap-1">
                                     <Button
