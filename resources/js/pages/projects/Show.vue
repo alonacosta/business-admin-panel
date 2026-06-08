@@ -92,7 +92,13 @@ const projectProgress = computed(() => {
 });
 
 const boardTasks = computed(() => {
-    const tasks = props.project.tasks ?? [];
+    let tasks = props.project.tasks ?? [];
+
+    if(selectedTaskStatus.value !== 'all') {
+        tasks = tasks.filter(
+            (task) => task.status === selectedTaskStatus.value,
+        );
+    }
 
     return {
         todo: tasks.filter((task) => task.status === 'todo'),
@@ -278,6 +284,10 @@ watch(
             selectedTask.value;
     },
 );
+
+function shouldShowBoardColumn(status: Task['status']) {
+    return selectedTaskStatus.value === 'all' || selectedTaskStatus.value === status;
+}
 </script>
 <template>
     <Head :title="project.name" />
@@ -408,7 +418,7 @@ watch(
                         }})
                     </Button>
                 </div>
-                <div class="flex items-center gap-2">
+                <div v-if="viewMode === 'list'" class="flex items-center gap-2">
                     <Select v-model="selectedTaskSort">
                         <span class="text-sm text-muted-foreground">
                             Sort by
@@ -462,7 +472,7 @@ watch(
                             variant="ghost"
                             size="icon"
                             class="h-7 w-7 shrink-0 rounded-full"
-                            @click="toggleTaskCompleted(task)"
+                            @click.stop="toggleTaskCompleted(task)"
                         >
                             <CheckCircle2
                                 v-if="task.status === 'completed'"
@@ -518,7 +528,7 @@ watch(
                             variant="ghost"
                             size="icon"
                             class="h-8 w-8"
-                            @click="openEditTaskDialog(task)"
+                            @click.stop="openEditTaskDialog(task)"
                         >
                             <Edit class="h-4 w-4" />
                         </Button>
@@ -527,7 +537,7 @@ watch(
                             variant="ghost"
                             size="icon"
                             class="h-8 w-8 text-destructive hover:text-destructive/90"
-                            @click="deleteTask(task)"
+                            @click.stop="deleteTask(task)"
                         >
                             <Trash2 class="h-4 w-4" />
                         </Button>
@@ -540,6 +550,7 @@ watch(
             >
                 <!-- To do -->
                 <div
+                    v-if="shouldShowBoardColumn('todo')"
                     class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
                 >
                     <div class="mb-4 flex items-center justify-between">
@@ -617,6 +628,7 @@ watch(
                 </div>
                 <!-- In progress -->
                 <div
+                    v-if="shouldShowBoardColumn('in_progress')"
                     class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
                 >
                     <div class="mb-4 flex items-center justify-between">
@@ -694,6 +706,7 @@ watch(
                 </div>
                 <!-- Completed -->
                 <div
+                    v-if="shouldShowBoardColumn('completed')"
                     class="rounded-xl border p-4 transition-colors hover:bg-muted/30"
                 >
                     <div class="mb-4 flex items-center justify-between">
