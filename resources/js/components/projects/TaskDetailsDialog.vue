@@ -229,6 +229,13 @@ watchDebounced(
     },
 );
 
+function replaceMention(content: string, userName: string) {
+    return content.replace(mentionRegex, (match) => {
+        const startsWithSpace = match.startsWith(' ');
+
+        return ` ${startsWithSpace ? ' ' : ''}@${userName} `;
+    });
+}
 function selectMention(user: MentionUser) {
     if (!form.content.match(mentionRegex)) {
         return;
@@ -236,7 +243,7 @@ function selectMention(user: MentionUser) {
 
     isSelectingMention.value = true;
 
-    form.content = form.content.replace(mentionRegex, ` @${user.name} `);
+    form.content = replaceMention(form.content, user.name);
 
     if (!form.mentioned_user_ids.includes(user.id)) {
         form.mentioned_user_ids.push(user.id);
@@ -254,7 +261,7 @@ function selectEditMention(user: MentionUser) {
 
     isSelectingEditMention.value = true;
 
-    editForm.content = editForm.content.replace(mentionRegex, ` @${user.name} `);
+    editForm.content = replaceMention(editForm.content, user.name);
 
     if (!editForm.mentioned_user_ids.includes(user.id)) {
         editForm.mentioned_user_ids.push(user.id);
