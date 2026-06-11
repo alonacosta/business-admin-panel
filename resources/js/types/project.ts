@@ -72,6 +72,12 @@ export type TaskStatusOption = {
     label: string;
 };
 
+export type TaskCommentMention = {
+    id: number;
+    task_comment_id: number;
+    user_id: number;
+};
+
 export type TaskComment = {
     id: number;
     content: string;
@@ -81,4 +87,11 @@ export type TaskComment = {
         name: string;
         email: string;
     } | null;
+    mentions?: TaskCommentMention[];
 };
+
+export type MentionUser = {
+    id: number;
+    name: string;
+    email: string;
+}

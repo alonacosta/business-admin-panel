@@ -92,7 +92,7 @@ class ProjectController extends Controller
             'tasks' => fn ($query) => $query
                 ->with([
                     'owner:id,name,email',
-                    'comments' => fn ($query) => $query->with('user:id,name,email')->latest(),
+                    'comments' => fn ($query) => $query->with(['user:id,name,email', 'mentions'])->latest(),
                 ])
                 ->orderByRaw("FIELD(status, 'todo', 'in_progress', 'completed')")
                 ->latest(),

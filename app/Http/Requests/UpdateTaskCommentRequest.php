@@ -24,6 +24,8 @@ class UpdateTaskCommentRequest extends FormRequest
     {
         return [
             'content' => ['required', 'string', 'max:5000'],
+            'mentioned_user_ids' => ['nullable', 'array'],
+            'mentioned_user_ids.*' => ['integer', 'exists:users,id'],
         ];
     }
 }

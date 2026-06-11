@@ -42,4 +42,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TaskComment::class);
     }
+
+    public function mentions(): HasMany
+    {
+        return $this->hasMany(Mention::class);
+    }
 }

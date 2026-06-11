@@ -21,10 +21,19 @@ class TaskCommentController extends Controller
     ): RedirectResponse {
         abort_unless($task->project_id === $project->id, 404);
 
-        $task->comments()->create([
-            ...$request->validated(),
+        $this->authorize('create', TaskComment::class);
+
+        $validated = $request->validated();
+
+        $comment = $task->comments()->create([
+            'content' => $validated['content'],
             'user_id' => $request->user()->id,
         ]);
+
+        $this->syncMentions(
+            $comment,
+            $validated['mentioned_user_ids'] ?? [],
+        );
 
         return back()->with('success', 'Comment created.');
     }
@@ -36,7 +45,16 @@ class TaskCommentController extends Controller
 
         $this->authorize('update', $comment);
 
-        $comment->update($request->validated());
+        $validated = $request->validated();
+
+        $comment->update([
+            'content' => $validated['content'],
+        ]);
+
+        $this->syncMentions(
+            $comment,
+            $validated['mentioned_user_ids'] ?? [],
+        );
 
         return back()->with('success', 'Comment updated.');
     }
@@ -51,5 +69,18 @@ class TaskCommentController extends Controller
         $comment->delete();
 
         return back()->with('success', 'Comment deleted.');
+    }
+
+    private function syncMentions(TaskComment $comment, array $userIds = []): void
+    {
+        $comment->mentions()->delete();
+
+        $comment->mentions()->createMany(
+            collect($userIds)
+                ->unique()
+                ->map(fn (int $userId) => ['user_id' => $userId])
+                ->values()
+                ->all()
+        );
     }
 }
